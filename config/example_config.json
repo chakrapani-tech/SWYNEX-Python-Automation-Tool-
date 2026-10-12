@@ -1,0 +1,26 @@
+{
+  "source_dir": "./input",
+  "destination_dir": "./organized",
+  "recursive": true,
+  "include_patterns": ["*.*"],
+  "exclude_patterns": ["__pycache__", ".git", ".DS_Store", "tmp", "temp"],
+  "max_file_size": 524288000,
+  "duplicate_policy": "report_only",
+  "report_dir": "./reports",
+  "log_level": "INFO",
+  "dry_run_default": true,
+  "quarantine_dir": "./quarantine",
+  "date_folders": false,
+  "categories": {
+    "Documents": [".pdf", ".doc", ".docx", ".txt"],
+    "Images": [".png", ".jpg", ".jpeg", ".gif"],
+    "Videos": [".mp4", ".mov"],
+    "Audio": [".mp3", ".wav"],
+    "Archives": [".zip", ".tar", ".gz"],
+    "Source Code": [".py", ".js", ".ts"],
+    "Spreadsheets": [".csv", ".xlsx"],
+    "Presentations": [".ppt", ".pptx"],
+    "Data Files": [".json", ".yaml", ".yml"],
+    "Executables": [".exe", ".bat", ".sh"]
+  }
+}

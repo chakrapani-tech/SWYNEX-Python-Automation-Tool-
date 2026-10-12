@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SWYNEX | Automation Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">S</span><span>SWYNEX <small>FILE AUTOMATION</small></span></div>
+      <span class="readonly"><span></span> Local reports dashboard</span>
+    </header>
+
+    <section class="intro">
+      <p class="eyebrow">OVERVIEW</p>
+      <h1>Your file operations,<br><span>at a glance.</span></h1>
+      <p class="lede">A read-only view of processing runs and their generated reports.</p>
+    </section>
+
+    {% if errors %}
+    <section class="notice" aria-label="Report loading issues">
+      <strong>Some reports could not be loaded.</strong>
+      <ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
+    </section>
+    {% endif %}
+
+    {% if not runs %}
+    <section class="empty">
+      <div class="empty-icon">↗</div>
+      <h2>No reports yet</h2>
+      <p>Run SWYNEX in dry-run or execute mode. New CSV and JSON reports will appear here.</p>
+      <code>python main.py --source .\input --destination .\organized --dry-run</code>
+    </section>
+    {% else %}
+      {% set latest = runs[0] %}
+      <section class="metrics" aria-label="Latest run metrics">
+        <article class="metric-card"><span>FILES PROCESSED</span><strong>{{ latest.run.get("files_processed", 0) }}</strong><small>Latest run</small></article>
+        <article class="metric-card"><span>FILES DISCOVERED</span><strong>{{ latest.run.get("total_files", 0) }}</strong><small>Latest run</small></article>
+        <article class="metric-card"><span>DUPLICATES</span><strong>{{ latest.duplicate_count }}</strong><small>Latest run</small></article>
+        <article class="metric-card"><span>RUN MODE</span><strong class="mode">{{ "Dry run" if latest.run.get("dry_run", true) else "Executed" }}</strong><small>{{ latest.run.get("run_id", "Unknown run") }}</small></article>
+      </section>
+
+      <section class="panel">
+        <div class="section-heading">
+          <div><p class="eyebrow">LATEST RUN</p><h2>Category breakdown</h2></div>
+          <time>{{ latest.run.get("started_at", "Timestamp unavailable") }}</time>
+        </div>
+        {% if latest.category_counts %}
+        <div class="categories">
+          {% for category, count in latest.category_counts.items() %}
+          <div class="category-row"><span>{{ category }}</span><div class="bar"><i style="width: {{ (count / latest.run.get('total_files', 1) * 100) if latest.run.get('total_files', 0) else 0 }}%"></i></div><strong>{{ count }}</strong></div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="muted">No categorized files in this run.</p>
+        {% endif %}
+      </section>
+
+      <section class="panel history">
+        <div class="section-heading"><div><p class="eyebrow">ACTIVITY</p><h2>Run history</h2></div><span class="count">{{ runs|length }} run{{ "" if runs|length == 1 else "s" }}</span></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Run</th><th>Started</th><th>Mode</th><th>Processed</th><th>Duplicates</th><th>Reports</th></tr></thead>
+            <tbody>
+              {% for item in runs %}
+              <tr>
+                <td><strong>{{ item.run.get("run_id", "Unknown run") }}</strong></td>
+                <td>{{ item.run.get("started_at", "—") }}</td>
+                <td><span class="badge {{ 'preview' if item.run.get('dry_run', true) else 'complete' }}">{{ "Preview" if item.run.get("dry_run", true) else "Executed" }}</span></td>
+                <td>{{ item.run.get("files_processed", 0) }}</td>
+                <td>{{ item.duplicate_count }}</td>
+                <td class="report-links"><a href="{{ url_for('download_report', filename=item.json_name) }}">JSON</a>{% if item.csv_name %}<a href="{{ url_for('download_report', filename=item.csv_name) }}">CSV</a>{% endif %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    {% endif %}
+    <footer>SWYNEX AUTOMATION <span>•</span> Reports are displayed locally and are not uploaded.</footer>
+  </main>
+</body>
+</html>
